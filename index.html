@@ -1,204 +1,96 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
+
 <meta charset="UTF-8">
-<title>ข้อมูลที่ทำการไปรษณีย์ Rollout</title>
 
-<!-- SheetJS -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<title>
+ข้อมูลที่ทำการไปรษณีย์ Rollout
+</title>
 
-<style>
+<link
+rel="stylesheet"
+href="css/style.css"
+>
 
-body {
-    font-family: Arial;
-    padding: 20px;
-}
-
-input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    font-size: 16px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th, td {
-    border: 1px solid #ccc;
-    padding: 8px;
-}
-
-th {
-    background: #f2f2f2;
-    position: sticky;
-    top: 0;
-}
-
-</style>
 </head>
 
 <body>
 
-<h2>ข้อมูลที่ทำการไปรษณีย์ Rollout</h2>
+<h2>
+ข้อมูลที่ทำการไปรษณีย์ Rollout
+</h2>
+
+<div class="top-bar">
 
 <input
 type="text"
 id="searchBox"
-placeholder="ค้นหา OutletCode / PostOfficeName / จังหวัด / GroupID"
+placeholder="ค้นหา..."
 >
+
+<button id="clearButton">
+ล้างค่า
+</button>
+
+</div>
+
+<div id="resultCount">
+กำลังโหลดข้อมูล...
+</div>
+
+<div class="table-container">
 
 <table>
 
 <thead>
+
 <tr>
 <th>OutletCode</th>
 <th>PostOfficeName</th>
-<th>จังหวัด</th>
+<th>Province</th>
 <th>GroupID</th>
 </tr>
+
+<tr class="filter-row">
+
+<th>
+<select id="filterOutlet">
+<option value="">ทั้งหมด</option>
+</select>
+</th>
+
+<th>
+<select id="filterPost">
+<option value="">ทั้งหมด</option>
+</select>
+</th>
+
+<th>
+<select id="filterProvince">
+<option value="">ทั้งหมด</option>
+</select>
+</th>
+
+<th>
+<select id="filterGroup">
+<option value="">ทั้งหมด</option>
+</select>
+</th>
+
+</tr>
+
 </thead>
 
 <tbody id="tableBody"></tbody>
 
 </table>
 
-<script>
+</div>
 
-let indexedData = [];
-
-// ===== โหลด Excel =====
-
-fetch("officedef.xlsx")
-.then(res => res.arrayBuffer())
-.then(data => {
-
-    const workbook =
-        XLSX.read(data);
-
-    const sheetName =
-        workbook.SheetNames[0];
-
-    const worksheet =
-        workbook.Sheets[sheetName];
-
-    const jsonData =
-        XLSX.utils.sheet_to_json(
-            worksheet,
-            { header: 1 }
-        );
-
-    // ข้าม header
-    const rows = jsonData.slice(1);
-
-    indexedData = rows.map(row => {
-
-        // A = 0
-        // D = 3
-        // G = 6
-        // AJ = 35
-
-        const outletCode =
-            row[0]
-            ? String(row[0]).padStart(5, "0")
-            : "";
-
-        return {
-
-            OutletCode:
-                outletCode,
-
-            PostOfficeName:
-                row[3] || "",
-
-            จังหวัด:
-                row[6] || "",
-
-            GroupID:
-                row[35] || "",
-
-            _searchIndex:
-                (
-                    outletCode + " " +
-                    (row[3] || "") + " " +
-                    (row[6] || "") + " " +
-                    (row[35] || "")
-                ).toLowerCase()
-        };
-    });
-
-    renderTable(indexedData);
-});
-
-// ===== Render Table =====
-
-function renderTable(list) {
-
-    const table =
-        document.getElementById("tableBody");
-
-    table.innerHTML = "";
-
-    const fragment =
-        document.createDocumentFragment();
-
-    list.forEach(item => {
-
-        const tr =
-            document.createElement("tr");
-
-        tr.innerHTML =
-            "<td>" + item.OutletCode + "</td>" +
-            "<td>" + item.PostOfficeName + "</td>" +
-            "<td>" + item.จังหวัด + "</td>" +
-            "<td>" + item.GroupID + "</td>";
-
-        fragment.appendChild(tr);
-    });
-
-    table.appendChild(fragment);
-}
-
-// ===== Search =====
-
-function searchData(keyword) {
-
-    if (!keyword) {
-        renderTable(indexedData);
-        return;
-    }
-
-    const filtered =
-        indexedData.filter(item =>
-            item._searchIndex.includes(keyword)
-        );
-
-    renderTable(filtered);
-}
-
-// ===== Debounce =====
-
-let timeout;
-
-document
-.getElementById("searchBox")
-.addEventListener("input", function() {
-
-    clearTimeout(timeout);
-
-    timeout = setTimeout(() => {
-
-        searchData(
-            this.value.toLowerCase()
-        );
-
-    }, 250);
-
-});
-
-</script>
+<script src="js/app.js"></script>
 
 </body>
+
 </html>
